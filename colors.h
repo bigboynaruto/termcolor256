@@ -1,5 +1,7 @@
-#ifndef TERMCOLS_H
-#define TERMCOLS_H
+#ifndef TERMCOLOR256_H
+#define TERMCOLOR256_H
+
+#define MAX_FORMAT 9
 
 #include <stdio.h>
 #include <stdint.h>
@@ -43,14 +45,13 @@
 static struct {
     uint8_t fg_col;
     uint8_t bg_col;
-    uint8_t format;
+    uint8_t format[MAX_FORMAT];
 } text;
 
-void init(uint8_t fg, uint8_t bg, uint8_t f) {
-    f %= 9;
+void init(uint8_t fg, uint8_t bg, uint8_t f[]) {
     text.fg_col = fg;
     text.bg_col = bg;
-    text.format = f;
+    for (int i = 0; i < MAX_FORMAT; i++) text.format[i] = f[i];
 }
 
 void set_fg(uint8_t col) {
@@ -75,16 +76,21 @@ void reset() {
     printf("\e[0m");
     text.fg_col = 0;
     text.bg_col = 0;
-    text.format = 0;
+    for (int i = 0; i < MAX_FORMAT; i++) text.format[i] = 0;
 }
 
 void set_format(uint8_t f) {
-    f %= 9;
+    f %= MAX_FORMAT;
+    text.format[f] = 1;
     printf("\e[%dm", f);
 }
 
 void reset_format(uint8_t f) {
-    f %= 9;
+    f %= MAX_FORMAT;
+    text.format[f] = 0;
     printf("\e[%dm", f + 20);
 }
+
+#undef MAX_FORMAT
+
 #endif //TERMCOLS_H
