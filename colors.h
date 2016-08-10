@@ -5,9 +5,13 @@
 #include <stdint.h>
 #include <stdarg.h>
 
-/*
+
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
 
+#error "Windows is not supported yet"
+
+#endif
+/*
 #include <windows.h>
 
 #else
@@ -77,7 +81,14 @@ typedef enum {
 #define term_set_format(...) _term_set_format(__VA_ARGS__, NULL)
 #define term_reset_format(...) _term_reset_format(__VA_ARGS__, NULL)
 
-void term_set_fg(uint8_t col) {
+#define TO_STRING(x) #x
+#define BG(col) TO_STRING(col)
+
+#define GET_MACRO(_1,_2,_3,NAME,...) NAME
+#define term_set_fg(...) GET_MACRO(__VA_ARGS__, _term_set_fg3, NULL, _term_set_fg1)(__VA_ARGS__)
+#define term_set_bg(...) GET_MACRO(__VA_ARGS__, _term_set_bg3, NULL, _term_set_bg1)(__VA_ARGS__)
+
+void _term_set_fg1(uint8_t col) {
     char c[] = "\e[38;5;000m";
     c[7] += col / 100;
     c[8] += col % 100 / 10;
@@ -85,12 +96,20 @@ void term_set_fg(uint8_t col) {
     printf("%s", c);
 }
 
-void term_set_bg(uint8_t col) {
+void _term_set_fg3(uint8_t r, uint8_t g, uint8_t b) {
+    printf("\e[38;5;%d;%d;%dm", r, g, b);
+}
+
+void _term_set_bg1(uint8_t col) {
     char c[] = "\e[48;5;000m";
     c[7] += col / 100;
     c[8] += col % 100 / 10;
     c[9] += col % 100 % 10;
     printf("%s", c);
+}
+
+void _term_set_bg3(uint8_t r, uint8_t g, uint8_t b) {
+    printf("\e[48;5;%d;%d;%dm", r, g, b);
 }
 
 void term_reset_fg() {
