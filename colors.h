@@ -1,17 +1,19 @@
 #ifndef TERMCOLOR256_H
 #define TERMCOLOR256_H
 
-#define MAX_FORMAT 9
-
 #include <stdio.h>
 #include <stdint.h>
+#include <stdarg.h>
 
+/*
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
 
 #include <windows.h>
 
 #else
+*/
 
+/*
 #define BLACK 0
 #define RED 1
 #define GREEN 2
@@ -28,69 +30,99 @@
 #define LIGHTMAGENTA 13
 #define LIGHTCYAN 14
 #define WHITE 15
+*/
 
+typedef enum {
+    BOLD = 1,
+    DIM = 2,
+    UNDERLINED = 4,
+    BLINK = 5,
+    INVERTED = 7,
+    HIDDEN = 8
+} Formats;
+
+typedef enum {
+    BLACK,
+    RED,
+    GREEN,
+    YELLOW,
+    BLUE,
+    MAGENTA,
+    CYAN,
+    LIGHT_GRAY,
+    DARK_GRAY,
+    LIGHT_RED,
+    LIGHT_GREEN,
+    LIGHT_YELLOW,
+    LIGHT_BLUE,
+    LIGHT_MAGENTA,
+    LIGHT_CYAN,
+    WHITE
+} StandartColors;
+
+/*
 #define BOLD 1
 #define DIM 2
 #define UNDERLINED 4
 #define BLINK 5
 #define INVERTED 7
 #define HIDDEN 8
+*/
 
-#define RESET_ALL 0
-
+/*
 #endif
+*/
 
 #define RGB(r, g, b) (r * 6 / 256) * 36 + (g * 6 / 256) * 6 + (b * 6 / 256)
+#define term_set_format(...) _term_set_format(__VA_ARGS__, NULL)
+#define term_reset_format(...) _term_reset_format(__VA_ARGS__, NULL)
 
-static struct {
-    uint8_t fg_col;
-    uint8_t bg_col;
-    uint8_t format[MAX_FORMAT];
-} style;
-
-void init(uint8_t fg, uint8_t bg, uint8_t f[]) {
-    style.fg_col = fg;
-    style.bg_col = bg;
-    for (int i = 0; i < MAX_FORMAT; i++) style.format[i] = f[i];
-}
-
-void set_fg(uint8_t col) {
+void term_set_fg(uint8_t col) {
     char c[] = "\e[38;5;000m";
     c[7] += col / 100;
     c[8] += col % 100 / 10;
     c[9] += col % 100 % 10;
     printf("%s", c);
-    style.fg_col = col;
 }
 
-void set_bg(uint8_t col) {
+void term_set_bg(uint8_t col) {
     char c[] = "\e[48;5;000m";
     c[7] += col / 100;
     c[8] += col % 100 / 10;
     c[9] += col % 100 % 10;
     printf("%s", c);
-    style.bg_col = col;
 }
 
-void reset() {
+void term_reset() {
     printf("\e[0m");
-    style.fg_col = 0;
-    style.bg_col = 0;
-    for (int i = 0; i < MAX_FORMAT; i++) style.format[i] = 0;
 }
 
-void set_format(uint8_t f) {
-    f %= MAX_FORMAT;
-    style.format[f] = 1;
-    printf("\e[%dm", f);
+void _term_set_format(Formats arg1, ...) {
+    va_list ap;
+    va_start(ap, arg1);
+
+    void* curr_arg = (void*)arg1;
+
+    do {
+        printf("\e[%dm", (uint8_t)(Formats)curr_arg);
+    }
+    while ((curr_arg = va_arg(ap, void*)) != NULL);
+
+    va_end(ap);
 }
 
-void reset_format(uint8_t f) {
-    f %= MAX_FORMAT;
-    style.format[f] = 0;
-    printf("\e[%dm", f + 20);
-}
+void _term_reset_format(Formats arg1, ...) {
+    va_list ap;
+    va_start(ap, arg1);
 
-#undef MAX_FORMAT
+    void* curr_arg = (void*)arg1;
+
+    do {
+        printf("\e[%dm", (uint8_t)(Formats)curr_arg + 20);
+    }
+    while ((curr_arg = va_arg(ap, void*)) != NULL);
+
+    va_end(ap);
+}
 
 #endif //TERMCOLS_H
