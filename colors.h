@@ -46,12 +46,12 @@ static struct {
     uint8_t fg_col;
     uint8_t bg_col;
     uint8_t format[MAX_FORMAT];
-} text;
+} style;
 
 void init(uint8_t fg, uint8_t bg, uint8_t f[]) {
-    text.fg_col = fg;
-    text.bg_col = bg;
-    for (int i = 0; i < MAX_FORMAT; i++) text.format[i] = f[i];
+    style.fg_col = fg;
+    style.bg_col = bg;
+    for (int i = 0; i < MAX_FORMAT; i++) style.format[i] = f[i];
 }
 
 void set_fg(uint8_t col) {
@@ -60,7 +60,7 @@ void set_fg(uint8_t col) {
     c[8] += col % 100 / 10;
     c[9] += col % 100 % 10;
     printf("%s", c);
-    text.fg_col = col;
+    style.fg_col = col;
 }
 
 void set_bg(uint8_t col) {
@@ -69,25 +69,25 @@ void set_bg(uint8_t col) {
     c[8] += col % 100 / 10;
     c[9] += col % 100 % 10;
     printf("%s", c);
-    text.bg_col = col;
+    style.bg_col = col;
 }
 
 void reset() {
     printf("\e[0m");
-    text.fg_col = 0;
-    text.bg_col = 0;
-    for (int i = 0; i < MAX_FORMAT; i++) text.format[i] = 0;
+    style.fg_col = 0;
+    style.bg_col = 0;
+    for (int i = 0; i < MAX_FORMAT; i++) style.format[i] = 0;
 }
 
 void set_format(uint8_t f) {
     f %= MAX_FORMAT;
-    text.format[f] = 1;
+    style.format[f] = 1;
     printf("\e[%dm", f);
 }
 
 void reset_format(uint8_t f) {
     f %= MAX_FORMAT;
-    text.format[f] = 0;
+    style.format[f] = 0;
     printf("\e[%dm", f + 20);
 }
 
