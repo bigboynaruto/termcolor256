@@ -93,6 +93,14 @@ void term_set_bg(uint8_t col) {
     printf("%s", c);
 }
 
+void term_reset_fg() {
+    printf("\e[38;5;016m");
+}
+
+void term_reset_bg() {
+    printf("\e[48;5;016m");
+}
+
 void term_reset() {
     printf("\e[0m");
 }
