@@ -10,12 +10,19 @@
 
 #error "Windows is not supported yet"
 
-#endif
-/*
+#define __WINDOWS__
+
 #include <windows.h>
 
+#elif defined(__unix__) || defined(__unix)
+
+#define __UNIX__
+
 #else
-*/
+
+#error "unsupported platform"
+
+#endif
 
 /*
 #define BLACK 0
@@ -73,11 +80,7 @@ typedef enum {
 #define HIDDEN 8
 */
 
-/*
-#endif
-*/
-
-#define RGB(r, g, b) (r * 6 / 256) * 36 + (g * 6 / 256) * 6 + (b * 6 / 256)
+//#define RGB(r,g,b) (r * 6 / 256) * 36 + (g * 6 / 256) * 6 + (b * 6 / 256)
 #define term_set_format(...) _term_set_format(__VA_ARGS__, NULL)
 #define term_reset_format(...) _term_reset_format(__VA_ARGS__, NULL)
 
@@ -152,4 +155,4 @@ void _term_reset_format(Formats arg1, ...) {
     va_end(ap);
 }
 
-#endif //TERMCOLS_H
+#endif //TERMCOLOR256_H
