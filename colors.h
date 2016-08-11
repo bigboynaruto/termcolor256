@@ -16,6 +16,25 @@
 
 #define _ISATTY_ _isatty(_fileno(stdout))
 
+typedef enum {
+    BLACK           = 0,
+    BLUE            = FOREGROUND_BLUE,
+    GREEN           = FOREGROUND_GREEN,
+    CYAN            = FOREGROUND_GREEN | FOREGROUND_BLUE,
+    RED             = FOREGROUND_RED,
+    MAGENTA         = FOREGROUND_RED | FOREGROUND_BLUE,
+    YELLOW          = FOREGROUND_RED | FOREGROUND_GREEN,
+    DARKGRAY        = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
+    LIGHTGRAY            = FOREGROUND_INTENSITY,
+    LIGHTBLUE       = FOREGROUND_INTENSITY | FOREGROUND_BLUE,
+    LIGHTGREEN      = FOREGROUND_INTENSITY | FOREGROUND_GREEN,
+    LIGHTCYAN       = FOREGROUND_INTENSITY | FOREGROUND_GREEN | FOREGROUND_BLUE,
+    LIGHTRED        = FOREGROUND_INTENSITY | FOREGROUND_RED,
+    LIGHTMAGENTA    = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_BLUE,
+    LIGHTYELLOW     = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN,
+    WHITE           = FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
+};
+
 #elif defined(__unix__) || defined(__unix) || defined(__APPLE__)
 
 #include <unistd.h>
@@ -23,6 +42,25 @@
 #define __UNIX__
 
 #define _ISATTY_ isatty(fileno(stdout))
+
+typedef enum {
+    BLACK,
+    RED,
+    GREEN,
+    YELLOW,
+    BLUE,
+    MAGENTA,
+    CYAN,
+    LIGHTGRAY,
+    DARKGRAY,
+    LIGHTRED,
+    LIGHTGREEN,
+    LIGHTYELLOW,
+    LIGHTBLUE,
+    LIGHTMAGENTA,
+    LIGHTCYAN,
+    WHITE
+} StandartColors;
 
 #else
 
@@ -58,25 +96,6 @@ typedef enum {
     HIDDEN = 8
 } Formats;
 
-typedef enum {
-    BLACK,
-    RED,
-    GREEN,
-    YELLOW,
-    BLUE,
-    MAGENTA,
-    CYAN,
-    LIGHT_GRAY,
-    DARK_GRAY,
-    LIGHT_RED,
-    LIGHT_GREEN,
-    LIGHT_YELLOW,
-    LIGHT_BLUE,
-    LIGHT_MAGENTA,
-    LIGHT_CYAN,
-    WHITE
-} StandartColors;
-
 /*
 #define BOLD 1
 #define DIM 2
@@ -99,19 +118,27 @@ typedef enum {
 
 void _term_set_fg1(uint8_t col) {
     if (_ISATTY_) {
-        #ifdef __UNIX__
+        #if defined(__UNIX__)
             char c[] = "\e[38;5;000m";
             c[7] += col / 100;
             c[8] += col % 100 / 10;
             c[9] += col % 100 % 10;
             printf("%s", c);
+        #elif defined(__WINDOWS__)
+            if (col >= 0 && col < 16) {
+                CONSOLE_SCREEN_BUFFER_INFO info;
+                GetConsoleScreenBufferInfo(h, &info);
+                uint8_t fg_col = col;
+                uint8_t bg_col = info.wAttributes >> 4;
+                SetConsoleTextAttribute(h, fg_col | bg_col);
+            }
         #endif
     }
 }
 
 void _term_set_fg3(uint8_t r, uint8_t g, uint8_t b) {
     if (_ISATTY_) {
-        #ifdef __UNIX__
+        #if defined(__UNIX__)
             printf("\e[38;5;%d;%d;%dm", r, g, b);
         #endif
     }
@@ -119,19 +146,27 @@ void _term_set_fg3(uint8_t r, uint8_t g, uint8_t b) {
 
 void _term_set_bg1(uint8_t col) {
     if (_ISATTY_) {
-        #ifdef __UNIX__
+        #if defined(__UNIX__)
             char c[] = "\e[48;5;000m";
             c[7] += col / 100;
             c[8] += col % 100 / 10;
             c[9] += col % 100 % 10;
             printf("%s", c);
+        #elif defined(__WINDOWS__)
+            if (col >= 0 && col < 16) {
+                CONSOLE_SCREEN_BUFFER_INFO info;
+                GetConsoleScreenBufferInfo(h, &info);
+                uint8_t bg_col = col << 4;
+                uint8_t fg_col = info.wAttributes & 15;
+                SetConsoleTextAttribute(h, fg_col | bg_col);
+            }
         #endif
     }
 }
 
 void _term_set_bg3(uint8_t r, uint8_t g, uint8_t b) {
     if (_ISATTY_) {
-        #ifdef __UNIX__
+        #if defined(__UNIX__)
             printf("\e[48;5;%d;%d;%dm", r, g, b);
         #endif
     }
@@ -139,7 +174,7 @@ void _term_set_bg3(uint8_t r, uint8_t g, uint8_t b) {
 
 void term_reset_fg() {
     if (_ISATTY_) {
-        #ifdef __UNIX__
+        #if defined(__UNIX__)
             printf("\e[38;5;016m");
         #endif
     }
@@ -147,7 +182,7 @@ void term_reset_fg() {
 
 void term_reset_bg() {
     if (_ISATTY_) {
-        #ifdef __UNIX__
+        #if defined(__UNIX__)
             printf("\e[48;5;016m");
         #endif
     }
@@ -155,15 +190,18 @@ void term_reset_bg() {
 
 void term_reset() {
     if (_ISATTY_) {
-        #ifdef __UNIX__
+        #if defined(__UNIX__)
             printf("\e[0m");
+        #elif defined
+            HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+            SetConsoleTextAttribute(h, -1);
         #endif
     }
 }
 
 void _term_set_format(Formats arg1, ...) {
     if (_ISATTY_) {
-        #ifdef __UNIX__
+        #if defined(__UNIX__)
             va_list ap;
             va_start(ap, arg1);
 
@@ -181,7 +219,7 @@ void _term_set_format(Formats arg1, ...) {
 
 void _term_reset_format(Formats arg1, ...) {
     if (_ISATTY_) {
-        #ifdef __UNIX__
+        #if defined(__UNIX__)
             va_list ap;
             va_start(ap, arg1);
 
