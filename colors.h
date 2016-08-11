@@ -25,7 +25,7 @@ typedef enum {
     MAGENTA         = FOREGROUND_RED | FOREGROUND_BLUE,
     YELLOW          = FOREGROUND_RED | FOREGROUND_GREEN,
     DARKGRAY        = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
-    LIGHTGRAY            = FOREGROUND_INTENSITY,
+    LIGHTGRAY       = FOREGROUND_INTENSITY,
     LIGHTBLUE       = FOREGROUND_INTENSITY | FOREGROUND_BLUE,
     LIGHTGREEN      = FOREGROUND_INTENSITY | FOREGROUND_GREEN,
     LIGHTCYAN       = FOREGROUND_INTENSITY | FOREGROUND_GREEN | FOREGROUND_BLUE,
@@ -126,6 +126,7 @@ void _term_set_fg1(uint8_t col) {
             printf("%s", c);
         #elif defined(__WINDOWS__)
             if (col >= 0 && col < 16) {
+                HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
                 CONSOLE_SCREEN_BUFFER_INFO info;
                 GetConsoleScreenBufferInfo(h, &info);
                 uint8_t fg_col = col;
@@ -154,9 +155,10 @@ void _term_set_bg1(uint8_t col) {
             printf("%s", c);
         #elif defined(__WINDOWS__)
             if (col >= 0 && col < 16) {
+                HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
                 CONSOLE_SCREEN_BUFFER_INFO info;
                 GetConsoleScreenBufferInfo(h, &info);
-                uint8_t bg_col = col << 4;
+                uint8_t bg_col = col << 4 >> 4;
                 uint8_t fg_col = info.wAttributes & 15;
                 SetConsoleTextAttribute(h, fg_col | bg_col);
             }
@@ -176,6 +178,15 @@ void term_reset_fg() {
     if (_ISATTY_) {
         #if defined(__UNIX__)
             printf("\e[38;5;016m");
+        #elif defined(__WINDOWS__)
+            if (col >= 0 && col < 16) {
+                HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+                CONSOLE_SCREEN_BUFFER_INFO info;
+                GetConsoleScreenBufferInfo(h, &info);
+                uint8_t bg_col = info.wAttributes >> 4 << 4;
+                uint8_t fg_col = WHITE;
+                SetConsoleTextAttribute(h, fg_col | bg_col);
+            }
         #endif
     }
 }
@@ -184,6 +195,15 @@ void term_reset_bg() {
     if (_ISATTY_) {
         #if defined(__UNIX__)
             printf("\e[48;5;016m");
+        #elif defined(__WINDOWS__)
+            if (col >= 0 && col < 16) {
+                HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+                CONSOLE_SCREEN_BUFFER_INFO info;
+                GetConsoleScreenBufferInfo(h, &info);
+                //uint8_t bg_col = BLACK << 4;
+                uint8_t fg_col = info.wAttributes & 15;
+                SetConsoleTextAttribute(h, fg_col /*| bg_col*/);
+            }
         #endif
     }
 }
@@ -194,7 +214,7 @@ void term_reset() {
             printf("\e[0m");
         #elif defined
             HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-            SetConsoleTextAttribute(h, -1);
+            SetConsoleTextAttribute(h, WHITE);
         #endif
     }
 }
