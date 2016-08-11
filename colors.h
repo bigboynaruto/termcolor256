@@ -14,7 +14,7 @@
 
 #define __WINDOWS__
 
-#define _ISATTY_ _isatty(_fileno(stdout))
+#define _isatty_(x) _isatty(_fileno(x))
 
 typedef enum {
     BLACK           = 0,
@@ -41,7 +41,7 @@ typedef enum {
 
 #define __UNIX__
 
-#define _ISATTY_ isatty(fileno(stdout))
+#define _isatty_(x) isatty(fileno(x))
 
 typedef enum {
     BLACK,
@@ -114,7 +114,7 @@ typedef enum {
 #define term_set_bg(...) GET_MACRO(__VA_ARGS__, _term_set_bg3, NULL, _term_set_bg1)(__VA_ARGS__)
 
 void _term_set_fg1(uint8_t col) {
-    if (_ISATTY_) {
+    if (_isatty_(stdout)) {
         #if defined(__UNIX__)
             char c[] = "\e[38;5;000m";
             c[7] += col / 100;
@@ -135,7 +135,7 @@ void _term_set_fg1(uint8_t col) {
 }
 
 void _term_set_fg3(uint8_t r, uint8_t g, uint8_t b) {
-    if (_ISATTY_) {
+    if (_isatty_(stdout)) {
         #if defined(__UNIX__)
             printf("\e[38;5;%d;%d;%dm", r, g, b);
         #endif
@@ -143,7 +143,7 @@ void _term_set_fg3(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 void _term_set_bg1(uint8_t col) {
-    if (_ISATTY_) {
+    if (_isatty_(stdout)) {
         #if defined(__UNIX__)
             char c[] = "\e[48;5;000m";
             c[7] += col / 100;
@@ -164,7 +164,7 @@ void _term_set_bg1(uint8_t col) {
 }
 
 void _term_set_bg3(uint8_t r, uint8_t g, uint8_t b) {
-    if (_ISATTY_) {
+    if (_isatty_(stdout)) {
         #if defined(__UNIX__)
             printf("\e[48;5;%d;%d;%dm", r, g, b);
         #endif
@@ -172,7 +172,7 @@ void _term_set_bg3(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 void term_reset_fg() {
-    if (_ISATTY_) {
+    if (_isatty_(stdout)) {
         #if defined(__UNIX__)
             printf("\e[38;5;016m");
         #elif defined(__WINDOWS__)
@@ -189,7 +189,7 @@ void term_reset_fg() {
 }
 
 void term_reset_bg() {
-    if (_ISATTY_) {
+    if (_isatty_(stdout)) {
         #if defined(__UNIX__)
             printf("\e[48;5;016m");
         #elif defined(__WINDOWS__)
@@ -206,7 +206,7 @@ void term_reset_bg() {
 }
 
 void term_reset() {
-    if (_ISATTY_) {
+    if (_isatty_(stdout)) {
         #if defined(__UNIX__)
             printf("\e[0m");
         #elif defined
@@ -217,17 +217,17 @@ void term_reset() {
 }
 
 void _term_set_format(Formats arg1, ...) {
-    if (_ISATTY_) {
+    if (_isatty_(stdout)) {
         #if defined(__UNIX__)
             va_list ap;
             va_start(ap, arg1);
 
-            Formats* curr_arg = (Formats*)arg1;
+            void* curr_arg = (void*)arg1;
 
             do {
-                printf("\e[%dm", (uint8_t)(Formats)*curr_arg);
+                printf("\e[%dm", (uint8_t)(Formats)curr_arg);
             }
-            while ((curr_arg = va_arg(ap, Formats*)) != NULL);
+            while ((curr_arg = va_arg(ap, void*)) != NULL);
 
             va_end(ap);
         #endif
@@ -235,17 +235,17 @@ void _term_set_format(Formats arg1, ...) {
 }
 
 void _term_reset_format(Formats arg1, ...) {
-    if (_ISATTY_) {
+    if (_isatty_(stdout)) {
         #if defined(__UNIX__)
             va_list ap;
             va_start(ap, arg1);
 
-            Formats* curr_arg = (Formats*)arg1;
+            void* curr_arg = (void*)arg1;
 
             do {
-                printf("\e[%dm", (uint8_t)(Formats)*curr_arg + 20);
+                printf("\e[%dm", (uint8_t)(Formats)curr_arg + 20);
             }
-            while ((curr_arg = va_arg(ap, Formats*)) != NULL);
+            while ((curr_arg = va_arg(ap, void*)) != NULL);
 
             va_end(ap);
         #endif
