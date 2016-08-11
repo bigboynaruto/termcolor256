@@ -109,9 +109,6 @@ typedef enum {
 #define term_set_format(...) _term_set_format(__VA_ARGS__, NULL)
 #define term_reset_format(...) _term_reset_format(__VA_ARGS__, NULL)
 
-//#define TO_STRING(x) #x
-//#define BG(col) TO_STRING(col)
-
 #define GET_MACRO(_1,_2,_3,NAME,...) NAME
 #define term_set_fg(...) GET_MACRO(__VA_ARGS__, _term_set_fg3, NULL, _term_set_fg1)(__VA_ARGS__)
 #define term_set_bg(...) GET_MACRO(__VA_ARGS__, _term_set_bg3, NULL, _term_set_bg1)(__VA_ARGS__)
@@ -225,12 +222,12 @@ void _term_set_format(Formats arg1, ...) {
             va_list ap;
             va_start(ap, arg1);
 
-            void* curr_arg = (void*)arg1;
+            Formats* curr_arg = (Formats*)arg1;
 
             do {
-                printf("\e[%dm", (uint8_t)(Formats)curr_arg);
+                printf("\e[%dm", (uint8_t)(Formats)*curr_arg);
             }
-            while ((curr_arg = va_arg(ap, void*)) != NULL);
+            while ((curr_arg = va_arg(ap, Formats*)) != NULL);
 
             va_end(ap);
         #endif
@@ -243,12 +240,12 @@ void _term_reset_format(Formats arg1, ...) {
             va_list ap;
             va_start(ap, arg1);
 
-            void* curr_arg = (void*)arg1;
+            Formats* curr_arg = (Formats*)arg1;
 
             do {
-                printf("\e[%dm", (uint8_t)(Formats)curr_arg + 20);
+                printf("\e[%dm", (uint8_t)(Formats)*curr_arg + 20);
             }
-            while ((curr_arg = va_arg(ap, void*)) != NULL);
+            while ((curr_arg = va_arg(ap, Formats*)) != NULL);
 
             va_end(ap);
         #endif
