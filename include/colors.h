@@ -105,7 +105,7 @@ typedef enum {
 #define HIDDEN 8
 */
 
-//#define RGB(r,g,b) (r * 6 / 256) * 36 + (g * 6 / 256) * 6 + (b * 6 / 256)
+#define RGB(r,g,b) (r * 6 / 256) * 36 + (g * 6 / 256) * 6 + (b * 6 / 256)
 #define term_set_format(...) _term_set_format(__VA_ARGS__, NULL)
 #define term_reset_format(...) _term_reset_format(__VA_ARGS__, NULL)
 
